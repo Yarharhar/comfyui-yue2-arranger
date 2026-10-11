@@ -56,9 +56,12 @@ def main():
                    "terms": "driving, funky, dark", "include_base": True}}
     g["audio"] = {"class_type": "LoadAudio", "inputs": {"audio": upload(song)}}
     g["variety"] = {"class_type": "SongVarietyReport", "inputs": {"audio": ["audio", 0], "bpm_hint": 0.0, "beats_per_bar": 4}}
+    g["loop"] = {"class_type": "SeamlessLoop", "inputs": {"audio": ["audio", 0], "bpm": 0.0, "beats_per_bar": 4,
+                 "crossfade_bars": 2, "max_bars": 16}}
+    g["auto_locked"] = {"class_type": "YuE2AutoArrange", "inputs": {**g["auto"]["inputs"], "key_lock": "Em", "tempo_lock": 104.0}}
     outs = {"auto": 0, "auto_r": ("auto", 1), "auto_s": ("auto", 2), "sections": 0, "arrange": 0, "arrange_s": ("arrange", 1),
             "inst": 0, "inst_r": ("inst", 1), "tp": 0, "tp_n": ("tp", 1), "styles": 0, "variety": 0, "verdict": ("variety", 1),
-            "new_share": ("variety", 2)}
+            "new_share": ("variety", 2), "loop_info": ("loop", 1), "auto_locked": 0}
     for k, v in outs.items():
         node, idx = (k, v) if isinstance(v, int) else v
         g[f"p_{k}"] = {"class_type": "PreviewAny", "inputs": {"source": [node, idx]}}
@@ -97,6 +100,8 @@ def main():
                                           "Funk, house, 104 BPM, E minor, instrumental, dark"],
         "sections lists all 7 scores": text("sections")[0].count("score 6") >= 1,
         "variety verdict": text("verdict")[0] in ("varied", "repetitive"),
+        "loop: 16 whole bars": json.loads(text("loop_info")[0])["bars"] == 16,
+        "auto key/tempo lock": "K:Em" in text("auto_locked")[0] and "Q:1/4=104" in text("auto_locked")[0],
     }
     print(text("variety")[0])
     print(text("auto_r")[0].split("\n\n")[0])

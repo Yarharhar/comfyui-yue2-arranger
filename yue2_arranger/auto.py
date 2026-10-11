@@ -21,8 +21,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .score import (Group, Score, ScoreError, Section, check_compatible, group_bars, has_notes, ins_bars,
-                    make_instrumental, parse, stats, transpose_text, NATIVE_LABELS)
+from .score import (Group, Score, ScoreError, Section, check_compatible, group_bars, has_notes, ins_bars, key_of,
+                    make_instrumental, parse, semitones_to_key, set_tempo, stats, transpose_text, NATIVE_LABELS)
 
 DEFAULT_TERMS = "driving, funky, dark, intense, dynamic, evolving"
 
@@ -88,6 +88,30 @@ def _chunks(scores: list[Score], max_chunk_bars: int) -> list[Chunk]:
     return out
 
 
+def lock(texts: list[str], tempo_lock: float = 0.0, align_keys: bool = True) -> tuple[list[str], list[str]]:
+    """Before mixing: optionally set every score to one tempo, and move variants planned in another key of the same
+    mode (major/minor) into the base's key. Returns (texts, notes)."""
+    notes, out = [], []
+    base_key = None
+    for i, t in enumerate(texts):
+        if not isinstance(t, str) or not t.strip():
+            out.append(t)
+            continue
+        try:
+            if tempo_lock:
+                t = set_tempo(t, tempo_lock)
+            if i == 0:
+                base_key = key_of(t)
+            elif align_keys and base_key and key_of(t).replace(" ", "") != base_key.replace(" ", ""):
+                n = semitones_to_key(t, base_key)
+                t = transpose_text(t, n, key=base_key)
+                notes.append(f"score {i}: moved {n:+d} semitones to {base_key}")
+        except ScoreError as e:  # left as is; select_scores reports why it is unusable
+            notes.append(f"score {i}: not aligned ({e})")
+        out.append(t)
+    return out, notes
+
+
 def select_scores(texts: list[str], min_distinct_ratio: float = 0.08) -> tuple[list[Score], list[dict]]:
     """Parse, then keep the base and every compatible, non-duplicate, non-collapsed variant."""
     if not texts:
@@ -121,14 +145,18 @@ def select_scores(texts: list[str], min_distinct_ratio: float = 0.08) -> tuple[l
 
 def auto_arrange(texts: list[str], target_seconds: float = 300.0, max_chunk_bars: int = 16, hook_every_bars: int = 16,
                  instrumental: bool = True, move_vocals: bool = True, transpose: int = 0,
-                 min_distinct_ratio: float = 0.08) -> tuple[str, dict]:
+                 min_distinct_ratio: float = 0.08, key_lock: str = "", tempo_lock: float = 0.0,
+                 align_keys: bool = True) -> tuple[str, dict]:
+    """Mix `texts` (first = base) into one score of about `target_seconds`. key_lock (e.g. "Em") moves the result to
+    that key and overrides `transpose`; tempo_lock sets every score's Q: first; align_keys moves variants planned in
+    another key of the same mode into the base's key instead of skipping them."""
     if not 30 <= target_seconds <= 900:
         raise ScoreError("target_seconds must be between 30 and 900 (YuE2 renders at most 900 s)")
     if not 4 <= max_chunk_bars <= 64 or not 4 <= hook_every_bars <= 128:
         raise ScoreError("max_chunk_bars must be 4..64 and hook_every_bars 4..128")
+    texts, notes = lock(texts, tempo_lock, align_keys)
     scores, log = select_scores(texts, min_distinct_ratio)
     base = scores[0]
-    notes = []
     if stats(base)["distinct_ratio"] < min_distinct_ratio:
         notes.append("the base score itself loops (few distinct bars); the arrangement will too -- re-plan it")
     target_bars = min(target_seconds / base.seconds(1), 2000)  # Score clamps tempo/meter; this is a backstop
@@ -232,7 +260,12 @@ def auto_arrange(texts: list[str], target_seconds: float = 300.0, max_chunk_bars
     if instrumental or move_vocals:
         out, inst = make_instrumental(out, relabel=instrumental, move_vocals=move_vocals)
     text = out.text()
-    if transpose:
+    if key_lock.strip():
+        n = semitones_to_key(text, key_lock)
+        text = transpose_text(text, n, key=key_lock.strip())
+        if n:
+            notes.append(f"moved {n:+d} semitones to {key_lock.strip()}")
+    elif transpose:
         text = transpose_text(text, transpose)
     t = 0.0
     order = []

@@ -490,6 +490,34 @@ def transpose_text(text: str, semitones: int, key: str | None = None) -> str:
     return "\n".join(out) + "\n"
 
 
+def set_tempo(text: str, bpm: float) -> str:
+    """Rewrite the score's tempo to `bpm` quarter notes per minute. YuE2GenerateMusic follows Q: (the render plays
+    faster or slower), so this locks the tempo the planner drifted from."""
+    if not 20 <= bpm <= 400:
+        raise ScoreError("tempo must be 20..400 bpm")
+    if not isinstance(text, str) or len(text) > MAX_SCORE_CHARS:
+        raise ScoreError(f"score must be text of at most {MAX_SCORE_CHARS} characters")
+    lines = text.rstrip("\n").split("\n")
+    q = f"Q:1/4={bpm:g}"
+    for i, l in enumerate(lines):
+        if l.startswith("Q:"):
+            lines[i] = q
+            break
+        if l.startswith("K:"):
+            lines.insert(i, q)
+            break
+    else:
+        raise ScoreError("no K: line")
+    return "\n".join(lines) + "\n"
+
+
+def key_of(text: str) -> str:
+    for l in text.split("\n"):
+        if l.startswith("K:"):
+            return l[2:].strip()
+    raise ScoreError("no K: line")
+
+
 def semitones_to_key(text: str, target: str) -> int:
     """Smallest shift (-6..+5) that moves the score's key to `target` (same mode required)."""
     k = parse(text).field("K") or ""

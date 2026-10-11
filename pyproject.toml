@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-yue2-arranger"
-description = "Longer, more varied, vocal-free YuE2 songs: mix style-variant plans, make scores instrumental, transpose, and measure how repetitive a render sounds."
-version = "0.1.0"
+description = "Longer, more varied, vocal-free YuE2 songs: one node that plans, mixes, locks key/tempo, renders and retries until the song is varied enough, plus the separate steps, a variety report and seamless loops."
+version = "0.2.0"
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"

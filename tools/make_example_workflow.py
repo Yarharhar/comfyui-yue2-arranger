@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Writes example_workflows/yue2_varied_instrumental.json (ComfyUI UI format) from a running server's /object_info,
-so widget orders match the installed node versions.
+Writes the example workflows (ComfyUI UI format) from a running server's /object_info, so widget orders match the
+installed node versions. Use a server with the real YuE2 nodes (not the test stand-in backend).
+
+  example_workflows/yue2_varied_instrumental.json   every step as its own node
+  example_workflows/yue2_varied_song.json           the one-node version with the variety check and retries
 
   python tools/make_example_workflow.py http://127.0.0.1:8199
 """
@@ -9,7 +12,7 @@ import json, os, sys, urllib.request
 
 HOST = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8199"
 INFO = json.loads(urllib.request.urlopen(HOST + "/object_info", timeout=60).read())
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "example_workflows", "yue2_varied_instrumental.json")
+OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "example_workflows")
 
 STYLE = "Synthwave, analog bass, arpeggiated synths, gated drums, driving, melodic, 110 BPM, A minor, instrumental"
 LYRICS = "[Intro]\n\n[Verse]\n\n[Pre-Chorus]\n\n[Chorus]\n\n[Verse]\n\n[Bridge]\n\n[Chorus]\n\n[Outro]"
@@ -98,12 +101,38 @@ add(13, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [25
     {"filename_prefix": "audio/yue2_varied"}, None, {"audio": (12, 0)})
 add(14, "SongVarietyReport", [2580, 200], [380, 200], {}, None, {"audio": (12, 0)})
 
-wf = {"last_node_id": len(nodes), "last_link_id": len(links), "nodes": nodes, "links": links,
-      "groups": [{"id": 1, "title": "Plan once per style variant, then mix the plans", "bounding": [430, -40, 1330, 760],
-                  "color": "#3f789e", "font_size": 22, "flags": {}}],
-      "config": {}, "extra": {"notes": "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. "
-                                       "Same seed + lyrics for every plan; Auto-Arrange relabels sections so the render "
-                                       "has no voice. Song Variety Report checks the result."}, "version": 0.4}
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
-json.dump(wf, open(OUT, "w"), indent=1)
-print("wrote", os.path.relpath(OUT), len(nodes), "nodes", len(links), "links")
+
+
+def write(name, groups, notes):
+    wf = {"last_node_id": max(n["id"] for n in nodes), "last_link_id": len(links), "nodes": nodes, "links": links,
+          "groups": groups, "config": {}, "extra": {"notes": notes}, "version": 0.4}
+    out = os.path.join(OUT_DIR, name)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    json.dump(wf, open(out, "w"), indent=1)
+    print("wrote", os.path.relpath(out), len(nodes), "nodes", len(links), "links")
+
+
+write("yue2_varied_instrumental.json",
+      [{"id": 1, "title": "Plan once per style variant, then mix the plans", "bounding": [430, -40, 1330, 760],
+        "color": "#3f789e", "font_size": 22, "flags": {}}],
+      "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. Same seed + lyrics for "
+      "every plan; Auto-Arrange relabels sections so the render has no voice. Song Variety Report checks the result.")
+
+# one-node version: plan, mix, lock, render, check, retry
+nodes.clear()
+links.clear()
+add(1, "CheckpointLoaderSimple", [20, 20], [380, 100], {"ckpt_name": ckpt}, "YuE2 checkpoint")
+add(2, "LoraLoaderModelOnly", [20, 170], [380, 90], {"lora_name": "nar_lora_joint_v9_comfyui.safetensors", "strength_model": 1.0},
+    "NAR mastering LoRA (optional)", {"model": (1, 0)})
+add(3, "YuE2VariedSong", [440, 20], [460, 760], {"style": STYLE, "lyrics": LYRICS, "seed": SEED}, None,
+    {"model": (2, 0), "clip": (1, 1), "vae": (1, 2)})
+add(4, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [940, 20], [320, 120],
+    {"filename_prefix": "audio/yue2_varied_song"}, None, {"audio": (3, 0)})
+add(5, "PreviewAny", [940, 190], [460, 360], {}, "Attempts and arrangement", {"source": (3, 2)})
+add(6, "SeamlessLoop", [940, 600], [320, 160], {"max_bars": 32}, "Optional: a 32-bar loop for menus", {"audio": (3, 0)})
+add(7, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [1300, 600], [320, 120],
+    {"filename_prefix": "audio/yue2_varied_song_loop"}, None, {"audio": (6, 0)})
+write("yue2_varied_song.json", [],
+      "YuE2 Varied Song plans the style plus each variant term, mixes the plans, removes vocals, locks key/tempo if set, "
+      "renders, and checks the audio; a repetitive take is re-rendered (new render seed), then re-planned (next "
+      "planner seed), up to max_attempts. The report lists every attempt.")

@@ -9,10 +9,12 @@ expensive render, to fix both:
 
 | Node | What it does |
 |---|---|
+| **YuE2 Varied Song** | The whole pipeline in one node: plan, mix, make instrumental, lock key/tempo, render, check. A repetitive take is re-rendered, then re-planned, until one passes your thresholds or `max_attempts` runs out; you get the first passing take or the most varied one. See below. |
+| **Seamless Loop** | Cuts a song into a loop of whole bars and crossfades the tail into the start, so it repeats without a seam. |
 | **YuE2 Style Variants** | Your style prompt plus one variant per comma-separated term (`driving, funky, dark, intense, dynamic, evolving` by default). Its list output runs the planner once per style. |
 | **YuE2 Auto-Arrange** | Mixes those plans into one longer score. New material from the variants goes between returns of the base plan's chorus. It avoids splices that would restart the song. Also makes the score instrumental and can transpose it. Same inputs, same score. |
 | **YuE2 Make Instrumental** | Relabels `verse/chorus/bridge` sections as `instrumental/interlude` and moves sung notes to the instrument voice. |
-| **YuE2 Transpose Score** | Moves every note and chord symbol by N semitones, or to a target key (`Em`). The render follows the new key. |
+| **YuE2 Transpose Score** | Moves every note and chord symbol by N semitones, or to a target key (`Em`). The render follows the new key. Auto-Arrange's `key_lock` / `tempo_lock` do the same for the mix. |
 | **YuE2 Score Sections** / **YuE2 Arrange Score** | Manual mode: list every section with an index, then write a plan like `intro:0 chorus:2 verse:7[0:2] chorus:2 outro:5`. |
 | **Song Variety Report** | Takes any `AUDIO` and reports the share of bars that bring something new, the longest stretch with nothing new, near-copies, and points where it sounds like the song starts over. |
 
@@ -26,7 +28,8 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/yarharhar/comfyui-yue2-arranger
 ```
 Restart ComfyUI. The nodes are under **audio → YuE2 arranger**. To try it, load
-`example_workflows/yue2_varied_instrumental.json`.
+`example_workflows/yue2_varied_song.json` (one node) or `example_workflows/yue2_varied_instrumental.json` (every
+step as its own node).
 
 ## How it works
 
@@ -50,7 +53,31 @@ Restart ComfyUI. The nodes are under **audio → YuE2 arranger**. To try it, loa
 5. **Check the render.** Run the decoded audio through Song Variety Report. Every chunk choice was made from the
    score, so the report is how you find out what the render actually did with it.
 
-### Wiring
+### YuE2 Varied Song
+
+Connect the YuE2 checkpoint's `MODEL` (through the NAR LoRA if you use one), `CLIP` and `VAE`, and set:
+
+| Input | Meaning |
+|---|---|
+| `style`, `lyrics`, `seed`, `terms` | As for the planner. Every plan uses the same lyrics and seed. |
+| `target_seconds` | Length of the mix. |
+| `min_new_bars`, `max_flat_seconds` | The pass thresholds (see Song Variety Report below). A take with an early restart also fails. |
+| `no_vocals` | Relabel vocal sections and move sung notes to the instrument (on by default). |
+| `key_lock` | A key like `Em`, or empty for the planner's. Variants planned in another key of the same mode are moved to the base's key instead of being skipped. |
+| `tempo_lock` | BPM, or 0 for the planner's. The planner drifts a few BPM from the prompt; the render follows the score's tempo. |
+| `max_attempts`, `renders_per_plan` | Renders in total, and failed renders of one arrangement before planning again. |
+| `steps`, `sampler_name`, `scheduler` | Render sampler settings. |
+
+Attempt *n* re-renders the current arrangement with render seed `seed + 1, seed + 2, …`; after `renders_per_plan`
+failures it plans everything again with planner seed `seed + 1`, and so on. Outputs: the chosen take's audio, its
+score, a report listing every attempt with its numbers, and its new-bar share.
+
+The node expands into ordinary YuE2 nodes at run time (ComfyUI's node expansion, the mechanism behind its loop
+nodes), so the queue shows each plan and render, and the pack still doesn't import YuE2 code. Each attempt costs a
+full render; each re-plan costs one planner run per style. What it can't check: whether a voice slipped in (none
+did in our tests once sections were relabelled), and whether the song is any good.
+
+### Wiring the separate nodes
 
 ```
 Style ─▶ YuE2 Style Variants ─styles (list)─▶ YuE2GenerateABC ─abc (list)─▶ YuE2 Auto-Arrange ─abc──────▶ YuE2GenerateMusic
@@ -89,8 +116,14 @@ abc, report = auto_arrange([base_abc, driving_abc, dark_abc], target_seconds=300
 print(summary(analyse(mono_float_array, 44100)))
 ```
 
-Tests: `python -m pytest` (core, numpy only) and `python tools/comfy_api_check.py http://127.0.0.1:8188 song.ogg`. The
-second needs a running ComfyUI with this pack installed; it runs every node through the `/prompt` API.
+Tests:
+- `python -m pytest`: two end-to-end tests of the core (numpy only).
+- `python tools/comfy_api_check.py http://127.0.0.1:8188 song.ogg`: runs every node through a real ComfyUI's
+  `/prompt` API (no model needed).
+- `python tools/varied_song_check.py http://127.0.0.1:8188 /tmp/fake.log`: YuE2 Varied Song's retry loop on a
+  **test** ComfyUI with `tools/fake_yue2_backend` symlinked into `custom_nodes` and `FAKE_YUE2_LOG=/tmp/fake.log` set.
+  The stand-in replaces the YuE2, sampler and VAE nodes (never install it on a real server); even render seeds give
+  a repetitive take, odd ones a varied take.
 
 ## Notes
 
