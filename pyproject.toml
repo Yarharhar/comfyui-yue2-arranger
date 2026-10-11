@@ -1,0 +1,20 @@
+[project]
+name = "comfyui-yue2-arranger"
+description = "Longer, more varied, vocal-free YuE2 songs: mix style-variant plans, make scores instrumental, transpose, and measure how repetitive a render sounds."
+version = "0.1.0"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[project.urls]
+Repository = "https://github.com/yarharhar/comfyui-yue2-arranger"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "YuE2 Arranger"
+Icon = ""
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
