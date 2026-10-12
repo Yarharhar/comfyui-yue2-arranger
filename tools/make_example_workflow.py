@@ -41,7 +41,7 @@ def widgets(cls, overrides):
             else:
                 v = {"INT": 0, "FLOAT": 0.0, "STRING": "", "BOOLEAN": False}[typ]
             out.append(v)
-            if opts.get("control_after_generate") or name in ("seed", "noise_seed"):
+            if opts.get("control_after_generate") or name in ("seed", "noise_seed", "plan_seed"):
                 out.append("fixed")
     return out
 
@@ -131,7 +131,7 @@ links.clear()
 add(1, "CheckpointLoaderSimple", [20, 20], [380, 100], {"ckpt_name": ckpt}, "YuE2 checkpoint")
 add(2, "LoraLoaderModelOnly", [20, 170], [380, 90], {"lora_name": "nar_lora_joint_v9_comfyui.safetensors", "strength_model": 1.0},
     "NAR mastering LoRA (optional)", {"model": (1, 0)})
-add(3, "YuE2VariedSong", [440, 20], [460, 760], {"style": STYLE, "lyrics": LYRICS, "seed": SEED}, None,
+add(3, "YuE2VariedSong", [440, 20], [460, 760], {"style": STYLE, "lyrics": LYRICS, "plan_seed": SEED}, None,
     {"model": (2, 0), "clip": (1, 1), "vae": (1, 2)})
 add(4, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [940, 20], [320, 120],
     {"filename_prefix": "audio/yue2_varied_song"}, None, {"audio": (3, 0)})

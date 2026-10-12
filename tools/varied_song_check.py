@@ -36,7 +36,8 @@ def run(seed, renders_per_plan, max_attempts=3, **extra):
     g = {"ckpt": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "fake.safetensors"}},
          "song": {"class_type": "YuE2VariedSong", "inputs": {
              "model": ["ckpt", 0], "clip": ["ckpt", 1], "vae": ["ckpt", 2], "style": STYLE,
-             "lyrics": "[Intro]\n\n[Verse]\n\n[Chorus]\n\n[Outro]", "seed": seed, "terms": "driving, funky, dark",
+             "lyrics": "[Intro]\n\n[Verse]\n\n[Chorus]\n\n[Outro]", "plan_seed": seed, "render_seed": -1,
+             "terms": "driving, funky, dark",
              "target_seconds": 240.0, "min_new_bars": 0.25, "max_flat_seconds": 75.0, "no_vocals": True,
              "key_lock": "", "tempo_lock": 0.0, "max_attempts": max_attempts, "renders_per_plan": renders_per_plan,
              "steps": 6, "sampler_name": "dpmpp_2m", "scheduler": "sgm_uniform", **extra}}}

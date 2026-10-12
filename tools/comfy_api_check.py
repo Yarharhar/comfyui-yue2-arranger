@@ -45,7 +45,8 @@ def main():
         g[f"s{i}"] = {"class_type": "PrimitiveStringMultiline", "inputs": {"value": fx(n)}}
     g["list"] = {"class_type": "CreateList", "inputs": {f"inputs.input{i}": [f"s{i}", 0] for i in range(len(SOURCES))}}
     g["auto"] = {"class_type": "YuE2AutoArrange", "inputs": {"scores": ["list", 0], "target_seconds": 300.0, "instrumental_labels": True,
-                 "vocals_to_instrument": True, "transpose": 0, "max_chunk_bars": 16, "hook_every_bars": 16}}
+                 "vocals_to_instrument": True, "key_lock": "", "transpose": 0, "tempo_lock": 0.0,
+                 "max_chunk_bars": 16, "hook_every_bars": 16}}
     g["sections"] = {"class_type": "YuE2ScoreSections", "inputs": {"scores": ["list", 0]}}
     g["arrange"] = {"class_type": "YuE2ArrangeScore", "inputs": {"scores": ["list", 0], "plan": PLAN, "instrumental_labels": True,
                     "vocals_to_instrument": True, "transpose": 0}}

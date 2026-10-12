@@ -151,21 +151,21 @@
    "widgets_values": [
     "Synthwave, analog bass, arpeggiated synths, gated drums, driving, melodic, 110 BPM, A minor, instrumental",
     "[Intro]\n\n[Verse]\n\n[Pre-Chorus]\n\n[Chorus]\n\n[Verse]\n\n[Bridge]\n\n[Chorus]\n\n[Outro]",
-    42,
-    "fixed",
     "driving, funky, dark, intense, dynamic, evolving",
     300.0,
-    0.25,
-    75.0,
     true,
     "",
     0.0,
-    3,
-    2,
+    42,
+    "fixed",
+    -1,
     6,
     "dpmpp_2m",
     "sgm_uniform",
-    -1
+    0.25,
+    75.0,
+    3,
+    2
    ]
   },
   {

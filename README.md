@@ -59,19 +59,20 @@ Connect the YuE2 checkpoint's `MODEL` (through the NAR LoRA if you use one), `CL
 
 | Input | Meaning |
 |---|---|
-| `style`, `lyrics`, `seed`, `terms` | As for the planner. Every plan uses the same lyrics and seed. |
-| `render_seed` | Seed for the audio render, or -1 to use `seed`. Keep `seed` fixed and change this to hear new renders of a plan you like. |
+| `style`, `lyrics`, `terms` | As for the planner. Every plan uses the same lyrics and seed. |
 | `target_seconds` | Length of the mix. |
-| `min_new_bars`, `max_flat_seconds` | The pass thresholds (see Song Variety Report below). A take with an early restart also fails. |
 | `no_vocals` | Relabel vocal sections and move sung notes to the instrument (on by default). |
 | `key_lock` | A key like `Em`, or empty for the planner's. Variants planned in another key of the same mode are moved to the base's key instead of being skipped. |
 | `tempo_lock` | BPM, or 0 for the planner's. The planner drifts a few BPM from the prompt; the render follows the score's tempo. |
-| `max_attempts`, `renders_per_plan` | Renders in total, and failed renders of one arrangement before planning again. |
+| `plan_seed` | Seed for the planner (the scores). |
+| `render_seed` | Seed for the audio render, or -1 to use `plan_seed`. Keep `plan_seed` fixed and change this to hear new renders of a plan you like. |
 | `steps`, `sampler_name`, `scheduler` | Render sampler settings. |
+| `min_new_bars`, `max_flat_seconds` | The pass thresholds (see Song Variety Report below). A take with an early restart also fails. |
+| `max_attempts`, `renders_per_plan` | Renders in total, and failed renders of one arrangement before planning again. |
 
-Attempt *n* re-renders the current arrangement with render seed `render_seed + 1, + 2, …` (`render_seed` is `seed`
-when set to -1); after `renders_per_plan`
-failures it plans everything again with planner seed `seed + 1`, and so on. Outputs: the chosen take's audio, its
+Attempt *n* re-renders the current arrangement with render seed `render_seed + 1, + 2, …` (`render_seed` is
+`plan_seed` when set to -1); after `renders_per_plan` failures it plans everything again with planner seed
+`plan_seed + 1`, and so on. Outputs: the chosen take's audio, its
 score, a report listing every attempt with its numbers, and its new-bar share.
 
 The node expands into ordinary YuE2 nodes at run time (ComfyUI's node expansion, the mechanism behind its loop

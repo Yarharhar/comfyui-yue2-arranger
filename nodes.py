@@ -98,18 +98,17 @@ class YuE2AutoArrange:
             "instrumental_labels": ("BOOLEAN", {"default": True, "tooltip": "relabel verse/chorus/bridge as instrumental/"
                                                 "interlude; YuE2 adds voice sounds to vocal-song labels"}),
             "vocals_to_instrument": ("BOOLEAN", {"default": True, "tooltip": "move sung notes to the instrument voice"}),
-            "transpose": ("INT", {"default": 0, "min": -12, "max": 12, "tooltip": "semitones"}),
+            "key_lock": ("STRING", {"default": "", "tooltip": "e.g. Em: move the result to this key (overrides transpose)"}),
+            "transpose": ("INT", {"default": 0, "min": -12, "max": 12, "tooltip": "semitones; ignored when key_lock is set"}),
+            "tempo_lock": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 300.0, "step": 1.0,
+                                     "tooltip": "bpm; 0 = keep the planner's. The render follows the score's tempo"}),
             "max_chunk_bars": ("INT", {"default": 16, "min": 4, "max": 64}),
             "hook_every_bars": ("INT", {"default": 16, "min": 4, "max": 128, "tooltip": "bars of new material between "
                                         "returns of the base's chorus"}),
-        }, "optional": {
-            "key_lock": ("STRING", {"default": "", "tooltip": "e.g. Em: move the result to this key (overrides transpose)"}),
-            "tempo_lock": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 300.0, "step": 1.0,
-                                     "tooltip": "bpm; 0 = keep the planner's. The render follows the score's tempo"}),
         }}
 
-    def run(self, scores, target_seconds, instrumental_labels, vocals_to_instrument, transpose, max_chunk_bars, hook_every_bars,
-            key_lock=None, tempo_lock=None):
+    def run(self, scores, target_seconds, instrumental_labels, vocals_to_instrument, key_lock, transpose, tempo_lock,
+            max_chunk_bars, hook_every_bars):
         texts = _scores(scores)
         tempo = float(_first(tempo_lock, 0.0, "tempo_lock") or 0.0)
         if tempo and not 40 <= tempo <= 300:
@@ -286,44 +285,49 @@ class YuE2VariedSong:
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {
+            # models
             "model": ("MODEL", {"rawLink": True}),
             "clip": ("CLIP", {"rawLink": True}),
             "vae": ("VAE", {"rawLink": True}),
+            # what to plan
             "style": ("STRING", {"multiline": True, "default": "", "tooltip": "genre, instruments, mood, BPM, key"}),
             "lyrics": ("STRING", {"multiline": True, "default": varied.DEFAULT_LYRICS,
                                   "tooltip": "section tags only for instrumentals"}),
-            "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 63 - 1, "control_after_generate": True,
-                             "tooltip": "planner seed (and render seed while render_seed is -1)"}),
             "terms": ("STRING", {"default": DEFAULT_TERMS, "tooltip": "comma-separated style variants to plan and mix"}),
+            # the song
             "target_seconds": ("FLOAT", {"default": 300.0, "min": 30.0, "max": 900.0, "step": 10.0}),
+            "no_vocals": ("BOOLEAN", {"default": True}),
+            "key_lock": ("STRING", {"default": "", "tooltip": "e.g. Em; empty = the planner's key"}),
+            "tempo_lock": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 300.0, "step": 1.0, "tooltip": "bpm; 0 = off"}),
+            # seeds
+            "plan_seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 63 - 1, "control_after_generate": True,
+                                  "tooltip": "seed for the planner (the ABC scores)"}),
+            "render_seed": ("INT", {"default": -1, "min": -1, "max": 2 ** 63 - 1,
+                                    "tooltip": "seed for the audio render; -1 = same as plan_seed. Keep plan_seed "
+                                               "fixed and change this to hear new renders of the same plan"}),
+            # render sampler
+            "steps": ("INT", {"default": 6, "min": 1, "max": 100}),
+            "sampler_name": ("STRING", {"default": "dpmpp_2m"}),
+            "scheduler": ("STRING", {"default": "sgm_uniform"}),
+            # variety check and retries
             "min_new_bars": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.01,
                                        "tooltip": "share of bars that must bring something new"}),
             "max_flat_seconds": ("FLOAT", {"default": 75.0, "min": 5.0, "max": 900.0, "step": 5.0,
                                            "tooltip": "longest stretch allowed without anything new"}),
-            "no_vocals": ("BOOLEAN", {"default": True}),
-            "key_lock": ("STRING", {"default": "", "tooltip": "e.g. Em; empty = the planner's key"}),
-            "tempo_lock": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 300.0, "step": 1.0, "tooltip": "bpm; 0 = off"}),
             "max_attempts": ("INT", {"default": 3, "min": 1, "max": 12, "tooltip": "renders in total"}),
             "renders_per_plan": ("INT", {"default": 2, "min": 1, "max": 12,
                                          "tooltip": "failed renders of one arrangement before re-planning"}),
-            "steps": ("INT", {"default": 6, "min": 1, "max": 100}),
-            "sampler_name": ("STRING", {"default": "dpmpp_2m"}),
-            "scheduler": ("STRING", {"default": "sgm_uniform"}),
-        }, "optional": {  # optional so workflows saved before it existed still validate
-            "render_seed": ("INT", {"default": -1, "min": -1, "max": 2 ** 63 - 1,
-                                    "tooltip": "seed for the audio render; -1 = use seed. Keep seed fixed and change "
-                                               "this to hear new renders of the same plan"}),
         }, "hidden": {"unique_id": "UNIQUE_ID"}}
 
-    def run(self, model, clip, vae, style, lyrics, seed, terms, target_seconds, min_new_bars, max_flat_seconds, no_vocals,
-            key_lock, tempo_lock, max_attempts, renders_per_plan, steps, sampler_name, scheduler, render_seed=-1,
+    def run(self, model, clip, vae, style, lyrics, terms, target_seconds, no_vocals, key_lock, tempo_lock, plan_seed,
+            render_seed, steps, sampler_name, scheduler, min_new_bars, max_flat_seconds, max_attempts, renders_per_plan,
             unique_id=None):
-        s = varied.Settings(style=style, lyrics=lyrics, seed=int(seed), render_seed=int(render_seed), terms=terms,
-                            target_seconds=float(target_seconds),
-                            min_new_bars=float(min_new_bars), max_flat_seconds=float(max_flat_seconds),
+        s = varied.Settings(style=style, lyrics=lyrics, terms=terms, target_seconds=float(target_seconds),
                             no_vocals=bool(no_vocals), key_lock=key_lock.strip(), tempo_lock=float(tempo_lock),
-                            max_attempts=int(max_attempts), renders_per_plan=int(renders_per_plan), steps=int(steps),
-                            sampler_name=sampler_name.strip(), scheduler=scheduler.strip()).validate()
+                            plan_seed=int(plan_seed), render_seed=int(render_seed), steps=int(steps),
+                            sampler_name=sampler_name.strip(), scheduler=scheduler.strip(),
+                            min_new_bars=float(min_new_bars), max_flat_seconds=float(max_flat_seconds),
+                            max_attempts=int(max_attempts), renders_per_plan=int(renders_per_plan)).validate()
         g, judge_id = varied.attempt_graph(varied.new_state(s), dict(model=model, clip=clip, vae=vae), str(unique_id))
         return {"result": tuple([judge_id, i] for i in range(4)), "expand": g}
 

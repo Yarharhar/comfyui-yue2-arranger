@@ -3,8 +3,8 @@
 expands into. Pure Python (no ComfyUI imports): the ComfyUI node in nodes.py only wires this up.
 
 One attempt = (plan round, render index):
-  plan round r      plans the base style + every variant with planner seed  seed + r
-  render index i    renders the arranged score with render seed  render_seed + i  (render_seed -1 = seed)
+  plan round r      plans the base style + every variant with planner seed  plan_seed + r
+  render index i    renders the arranged score with render seed  render_seed + i  (render_seed -1 = plan_seed)
 An attempt that passes the variety thresholds ends the run. Otherwise the next attempt re-renders the same
 arrangement (new render seed) until `renders_per_plan` renders have failed, then re-plans with the next seed.
 After `max_attempts` the most varied take is returned.
@@ -33,20 +33,20 @@ RENDERER = dict(mode="full", temperature=1.0, top_p=0.95, top_k=100, repetition_
 class Settings:
     style: str
     lyrics: str = DEFAULT_LYRICS
-    seed: int = 0
-    render_seed: int = -1  # -1: renders follow `seed`
     terms: str = DEFAULT_TERMS
     target_seconds: float = 300.0
-    min_new_bars: float = 0.25
-    max_flat_seconds: float = 75.0
     no_vocals: bool = True
     key_lock: str = ""
     tempo_lock: float = 0.0
-    max_attempts: int = 3
-    renders_per_plan: int = 2
+    plan_seed: int = 0
+    render_seed: int = -1  # -1: renders use plan_seed
     steps: int = 6
     sampler_name: str = "dpmpp_2m"
     scheduler: str = "sgm_uniform"
+    min_new_bars: float = 0.25
+    max_flat_seconds: float = 75.0
+    max_attempts: int = 3
+    renders_per_plan: int = 2
     styles: list = field(default_factory=list)
 
     def validate(self) -> "Settings":
@@ -54,10 +54,10 @@ class Settings:
             raise ScoreError("style is empty")
         if len(self.lyrics) > 4000:
             raise ScoreError("lyrics must be at most 4000 characters")
-        if not 0 <= self.seed < 2 ** 63:
-            raise ScoreError("seed out of range")
+        if not 0 <= self.plan_seed < 2 ** 63:
+            raise ScoreError("plan_seed out of range")
         if not -1 <= self.render_seed < 2 ** 63:
-            raise ScoreError("render_seed must be -1 (follow seed) or 0..2^63-1")
+            raise ScoreError("render_seed must be -1 (same as plan_seed) or 0..2^63-1")
         if not 30 <= self.target_seconds <= 900:
             raise ScoreError("target_seconds must be between 30 and 900")
         if not 0 <= self.min_new_bars <= 1 or not 0 < self.max_flat_seconds <= 900:
@@ -80,8 +80,8 @@ class Settings:
 def schedule(attempt: int, s: Settings) -> tuple[int, int, int]:
     """(plan round, planner seed, render seed) for attempt 0, 1, 2, ..."""
     plan_round, render_idx = divmod(attempt, s.renders_per_plan)
-    render_base = s.seed if s.render_seed < 0 else s.render_seed
-    return plan_round, (s.seed + plan_round) % 2 ** 63, (render_base + render_idx) % 2 ** 63
+    render_base = s.plan_seed if s.render_seed < 0 else s.render_seed
+    return plan_round, (s.plan_seed + plan_round) % 2 ** 63, (render_base + render_idx) % 2 ** 63
 
 
 def judge(report: dict, s: Settings) -> tuple[bool, float, list[str]]:

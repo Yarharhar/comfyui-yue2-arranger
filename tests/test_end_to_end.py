@@ -104,8 +104,8 @@ def test_variety_report():
     assert seam <= np.abs(np.diff(y[0])).max() + 1e-6
 
     # Varied Song's judge and seed schedule
-    s = varied_song.Settings(style="Funk", seed=10, renders_per_plan=2).validate()
+    s = varied_song.Settings(style="Funk", plan_seed=10, renders_per_plan=2).validate()
     assert [varied_song.schedule(a, s)[1:] for a in range(4)] == [(10, 10), (10, 11), (11, 10), (11, 11)]
-    s2 = varied_song.Settings(style="Funk", seed=10, render_seed=500, renders_per_plan=2).validate()
+    s2 = varied_song.Settings(style="Funk", plan_seed=10, render_seed=500, renders_per_plan=2).validate()
     assert [varied_song.schedule(a, s2)[1:] for a in range(4)] == [(10, 500), (10, 501), (11, 500), (11, 501)]
     assert varied_song.judge(r_loop, s)[0] is False and varied_song.judge(r_loop, s)[2]
