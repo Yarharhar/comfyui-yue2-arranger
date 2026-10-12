@@ -27,15 +27,20 @@ Same prompt, lyrics and planner seed (42), rendered two ways:
 
 > Synthwave, analog bass, arpeggiated synths, gated drums, driving, melodic, 110 BPM, A minor, instrumental
 
-**Plain YuE2** (1:24): `YuE2GenerateABC` → `YuE2GenerateMusic` with the planner's own score.
+**1. Plain YuE2** (1:24): `YuE2GenerateABC` → `YuE2GenerateMusic` with the planner's own score.
 
-<!-- plain_yue2.mp4 -->
+<!-- 1_plain_yue2.mp4 -->
 
-**YuE2 Varied Song** (4:52): `example_workflows/yue2_varied_song.json`, render seed 7. Mixes the base plan with three
-of its style variants, returning to the base chorus between them; passed the variety check on the first attempt
-(44% new bars, longest stretch with nothing new 29 s).
+**2. YuE2 Varied Song** (4:53): `example_workflows/yue2_varied_song.json`, render seed 42. Mixes the base plan with
+three of its style variants, returning to the base chorus between them. Passed the variety check on the first attempt
+(62% new bars, longest stretch with nothing new 13 s).
 
-<!-- varied_song.mp4 -->
+<!-- 2_varied_song.mp4 -->
+
+**3. Same arrangement, render seed 7** (4:52): the score is identical to 2; only the render differs. Also passed
+(44% new bars, 29 s).
+
+<!-- 3_varied_song_render_seed_7.mp4 -->
 
 ## Install
 
