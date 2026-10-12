@@ -29,18 +29,19 @@ Same prompt, lyrics and planner seed (42), rendered two ways:
 
 **1. Plain YuE2** (1:24): `YuE2GenerateABC` → `YuE2GenerateMusic` with the planner's own score.
 
-<!-- 1_plain_yue2.mp4 -->
+https://github.com/user-attachments/assets/25d06e4b-abe2-4e7f-81e1-98f8df450f3c
+
 
 **2. YuE2 Varied Song** (4:53): `example_workflows/yue2_varied_song.json`, render seed 42. Mixes the base plan with
 three of its style variants, returning to the base chorus between them. Passed the variety check on the first attempt
 (62% new bars, longest stretch with nothing new 13 s).
 
-<!-- 2_varied_song.mp4 -->
+https://github.com/user-attachments/assets/d7364b00-7ff8-413a-a893-7bcb50a1ecf2
 
 **3. Same arrangement, render seed 7** (4:52): the score is identical to 2; only the render differs. Also passed
 (44% new bars, 29 s).
 
-<!-- 3_varied_song_render_seed_7.mp4 -->
+https://github.com/user-attachments/assets/e09182ed-8f9f-498f-9052-4fbee122f82f
 
 ## Install
 
