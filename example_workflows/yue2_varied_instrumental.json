@@ -1,6 +1,6 @@
 {
- "last_node_id": 14,
- "last_link_id": 21,
+ "last_node_id": 18,
+ "last_link_id": 26,
  "nodes": [
   {
    "id": 1,
@@ -30,14 +30,14 @@
      "type": "CLIP",
      "links": [
       3,
-      7
+      8
      ]
     },
     {
      "name": "VAE",
      "type": "VAE",
      "links": [
-      19
+      22
      ]
     }
    ],
@@ -75,7 +75,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      14
+      16
      ]
     }
    ],
@@ -141,7 +141,7 @@
      "type": "STRING",
      "links": [
       5,
-      9
+      10
      ]
     }
    ],
@@ -152,6 +152,73 @@
     "[Intro]\n\n[Verse]\n\n[Pre-Chorus]\n\n[Chorus]\n\n[Verse]\n\n[Bridge]\n\n[Chorus]\n\n[Outro]"
    ],
    "title": "Lyrics (section tags only)"
+  },
+  {
+   "id": 15,
+   "type": "PrimitiveInt",
+   "pos": [
+    20,
+    750
+   ],
+   "size": [
+    300,
+    82
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      6
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    42,
+    "fixed"
+   ],
+   "title": "Plan seed (score / ABC)"
+  },
+  {
+   "id": 16,
+   "type": "PrimitiveInt",
+   "pos": [
+    20,
+    880
+   ],
+   "size": [
+    300,
+    82
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      13,
+      20
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    42,
+    "fixed"
+   ],
+   "title": "Render seed (audio)"
   },
   {
    "id": 5,
@@ -165,7 +232,7 @@
     150
    ],
    "flags": {},
-   "order": 4,
+   "order": 6,
    "mode": 0,
    "inputs": [
     {
@@ -190,7 +257,7 @@
      "name": "base_style",
      "type": "STRING",
      "links": [
-      8
+      9
      ]
     }
    ],
@@ -215,7 +282,7 @@
     420
    ],
    "flags": {},
-   "order": 5,
+   "order": 7,
    "mode": 0,
    "inputs": [
     {
@@ -238,6 +305,14 @@
      "widget": {
       "name": "lyrics"
      }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 6,
+     "widget": {
+      "name": "seed"
+     }
     }
    ],
    "outputs": [
@@ -245,7 +320,7 @@
      "name": "abc",
      "type": "STRING",
      "links": [
-      6
+      7
      ]
     }
    ],
@@ -279,13 +354,13 @@
     420
    ],
    "flags": {},
-   "order": 6,
+   "order": 8,
    "mode": 0,
    "inputs": [
     {
      "name": "scores",
      "type": "STRING",
-     "link": 6
+     "link": 7
     }
    ],
    "outputs": [
@@ -293,7 +368,7 @@
      "name": "abc",
      "type": "STRING",
      "links": [
-      10
+      11
      ]
     },
     {
@@ -310,7 +385,7 @@
      "name": "max_duration",
      "type": "FLOAT",
      "links": [
-      11
+      12
      ]
     }
    ],
@@ -340,18 +415,18 @@
     380
    ],
    "flags": {},
-   "order": 7,
+   "order": 9,
    "mode": 0,
    "inputs": [
     {
      "name": "clip",
      "type": "CLIP",
-     "link": 7
+     "link": 8
     },
     {
      "name": "style",
      "type": "STRING",
-     "link": 8,
+     "link": 9,
      "widget": {
       "name": "style"
      }
@@ -359,7 +434,7 @@
     {
      "name": "lyrics",
      "type": "STRING",
-     "link": 9,
+     "link": 10,
      "widget": {
       "name": "lyrics"
      }
@@ -367,15 +442,23 @@
     {
      "name": "abc",
      "type": "STRING",
-     "link": 10,
+     "link": 11,
      "widget": {
       "name": "abc"
      }
     },
     {
+     "name": "seed",
+     "type": "INT",
+     "link": 13,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
      "name": "max_duration",
      "type": "FLOAT",
-     "link": 11,
+     "link": 12,
      "widget": {
       "name": "max_duration"
      }
@@ -386,15 +469,15 @@
      "name": "CONDITIONING",
      "type": "CONDITIONING",
      "links": [
-      13,
-      15
+      15,
+      17
      ]
     },
     {
      "name": "seconds",
      "type": "FLOAT",
      "links": [
-      12
+      14
      ]
     }
    ],
@@ -428,13 +511,13 @@
     80
    ],
    "flags": {},
-   "order": 8,
+   "order": 10,
    "mode": 0,
    "inputs": [
     {
      "name": "seconds",
      "type": "FLOAT",
-     "link": 12,
+     "link": 14,
      "widget": {
       "name": "seconds"
      }
@@ -445,7 +528,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      17
+      19
      ]
     }
    ],
@@ -469,13 +552,13 @@
     30
    ],
    "flags": {},
-   "order": 9,
+   "order": 11,
    "mode": 0,
    "inputs": [
     {
      "name": "conditioning",
      "type": "CONDITIONING",
-     "link": 13
+     "link": 15
     }
    ],
    "outputs": [
@@ -483,7 +566,7 @@
      "name": "CONDITIONING",
      "type": "CONDITIONING",
      "links": [
-      16
+      18
      ]
     }
    ],
@@ -504,28 +587,36 @@
     300
    ],
    "flags": {},
-   "order": 10,
+   "order": 12,
    "mode": 0,
    "inputs": [
     {
      "name": "model",
      "type": "MODEL",
-     "link": 14
+     "link": 16
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 20,
+     "widget": {
+      "name": "seed"
+     }
     },
     {
      "name": "positive",
      "type": "CONDITIONING",
-     "link": 15
+     "link": 17
     },
     {
      "name": "negative",
      "type": "CONDITIONING",
-     "link": 16
+     "link": 18
     },
     {
      "name": "latent_image",
      "type": "LATENT",
-     "link": 17
+     "link": 19
     }
    ],
    "outputs": [
@@ -533,7 +624,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      18
+      21
      ]
     }
    ],
@@ -562,18 +653,18 @@
     50
    ],
    "flags": {},
-   "order": 11,
+   "order": 13,
    "mode": 0,
    "inputs": [
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 18
+     "link": 21
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 19
+     "link": 22
     }
    ],
    "outputs": [
@@ -581,8 +672,9 @@
      "name": "AUDIO",
      "type": "AUDIO",
      "links": [
-      20,
-      21
+      23,
+      24,
+      25
      ]
     }
    ],
@@ -603,13 +695,13 @@
     120
    ],
    "flags": {},
-   "order": 12,
+   "order": 14,
    "mode": 0,
    "inputs": [
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 20
+     "link": 23
     },
     {
      "name": "format",
@@ -643,13 +735,13 @@
     200
    ],
    "flags": {},
-   "order": 13,
+   "order": 15,
    "mode": 0,
    "inputs": [
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 21
+     "link": 24
     }
    ],
    "outputs": [
@@ -685,6 +777,92 @@
    "widgets_values": [
     0.0,
     4
+   ]
+  },
+  {
+   "id": 17,
+   "type": "SeamlessLoop",
+   "pos": [
+    2580,
+    450
+   ],
+   "size": [
+    320,
+    160
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "audio",
+     "type": "AUDIO",
+     "link": 25
+    }
+   ],
+   "outputs": [
+    {
+     "name": "audio",
+     "type": "AUDIO",
+     "links": [
+      26
+     ]
+    },
+    {
+     "name": "info",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SeamlessLoop"
+   },
+   "widgets_values": [
+    0.0,
+    4,
+    2,
+    32
+   ],
+   "title": "Optional: a 32-bar loop for menus"
+  },
+  {
+   "id": 18,
+   "type": "SaveAudioAdvanced",
+   "pos": [
+    2940,
+    450
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "audio",
+     "type": "AUDIO",
+     "link": 26
+    },
+    {
+     "name": "format",
+     "type": "COMFY_DYNAMICCOMBO_V3",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "audio",
+     "type": "AUDIO",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveAudioAdvanced"
+   },
+   "widgets_values": [
+    "audio/yue2_varied_loop"
    ]
   }
  ],
@@ -731,6 +909,14 @@
   ],
   [
    6,
+   15,
+   0,
+   6,
+   3,
+   "INT"
+  ],
+  [
+   7,
    6,
    0,
    7,
@@ -738,7 +924,7 @@
    "STRING"
   ],
   [
-   7,
+   8,
    1,
    1,
    8,
@@ -746,7 +932,7 @@
    "CLIP"
   ],
   [
-   8,
+   9,
    5,
    1,
    8,
@@ -754,7 +940,7 @@
    "STRING"
   ],
   [
-   9,
+   10,
    4,
    0,
    8,
@@ -762,7 +948,7 @@
    "STRING"
   ],
   [
-   10,
+   11,
    7,
    0,
    8,
@@ -770,15 +956,23 @@
    "STRING"
   ],
   [
-   11,
+   12,
    7,
    3,
    8,
-   4,
+   5,
    "FLOAT"
   ],
   [
-   12,
+   13,
+   16,
+   0,
+   8,
+   4,
+   "INT"
+  ],
+  [
+   14,
    8,
    1,
    9,
@@ -786,7 +980,7 @@
    "FLOAT"
   ],
   [
-   13,
+   15,
    8,
    0,
    10,
@@ -794,7 +988,7 @@
    "CONDITIONING"
   ],
   [
-   14,
+   16,
    2,
    0,
    11,
@@ -802,31 +996,39 @@
    "MODEL"
   ],
   [
-   15,
+   17,
    8,
-   0,
-   11,
-   1,
-   "CONDITIONING"
-  ],
-  [
-   16,
-   10,
    0,
    11,
    2,
    "CONDITIONING"
   ],
   [
-   17,
-   9,
+   18,
+   10,
    0,
    11,
    3,
+   "CONDITIONING"
+  ],
+  [
+   19,
+   9,
+   0,
+   11,
+   4,
    "LATENT"
   ],
   [
-   18,
+   20,
+   16,
+   0,
+   11,
+   1,
+   "INT"
+  ],
+  [
+   21,
    11,
    0,
    12,
@@ -834,7 +1036,7 @@
    "LATENT"
   ],
   [
-   19,
+   22,
    1,
    2,
    12,
@@ -842,7 +1044,7 @@
    "VAE"
   ],
   [
-   20,
+   23,
    12,
    0,
    13,
@@ -850,10 +1052,26 @@
    "AUDIO"
   ],
   [
-   21,
+   24,
    12,
    0,
    14,
+   0,
+   "AUDIO"
+  ],
+  [
+   25,
+   12,
+   0,
+   17,
+   0,
+   "AUDIO"
+  ],
+  [
+   26,
+   17,
+   0,
+   18,
    0,
    "AUDIO"
   ]
@@ -875,7 +1093,7 @@
  ],
  "config": {},
  "extra": {
-  "notes": "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. Same seed + lyrics for every plan; Auto-Arrange relabels sections so the render has no voice. Song Variety Report checks the result."
+  "notes": "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. Same plan seed + lyrics for every plan; Auto-Arrange relabels sections so the render has no voice. The render seed drives YuE2GenerateMusic and KSampler: keep the plan seed and change it for new renders of the same score. Song Variety Report checks the result (no automatic retries here; YuE2 Varied Song does those)."
  },
  "version": 0.4
 }

@@ -292,7 +292,8 @@ class YuE2VariedSong:
             "style": ("STRING", {"multiline": True, "default": "", "tooltip": "genre, instruments, mood, BPM, key"}),
             "lyrics": ("STRING", {"multiline": True, "default": varied.DEFAULT_LYRICS,
                                   "tooltip": "section tags only for instrumentals"}),
-            "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 63 - 1, "control_after_generate": True}),
+            "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 63 - 1, "control_after_generate": True,
+                             "tooltip": "planner seed (and render seed while render_seed is -1)"}),
             "terms": ("STRING", {"default": DEFAULT_TERMS, "tooltip": "comma-separated style variants to plan and mix"}),
             "target_seconds": ("FLOAT", {"default": 300.0, "min": 30.0, "max": 900.0, "step": 10.0}),
             "min_new_bars": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.01,
@@ -308,11 +309,17 @@ class YuE2VariedSong:
             "steps": ("INT", {"default": 6, "min": 1, "max": 100}),
             "sampler_name": ("STRING", {"default": "dpmpp_2m"}),
             "scheduler": ("STRING", {"default": "sgm_uniform"}),
+        }, "optional": {  # optional so workflows saved before it existed still validate
+            "render_seed": ("INT", {"default": -1, "min": -1, "max": 2 ** 63 - 1,
+                                    "tooltip": "seed for the audio render; -1 = use seed. Keep seed fixed and change "
+                                               "this to hear new renders of the same plan"}),
         }, "hidden": {"unique_id": "UNIQUE_ID"}}
 
     def run(self, model, clip, vae, style, lyrics, seed, terms, target_seconds, min_new_bars, max_flat_seconds, no_vocals,
-            key_lock, tempo_lock, max_attempts, renders_per_plan, steps, sampler_name, scheduler, unique_id=None):
-        s = varied.Settings(style=style, lyrics=lyrics, seed=int(seed), terms=terms, target_seconds=float(target_seconds),
+            key_lock, tempo_lock, max_attempts, renders_per_plan, steps, sampler_name, scheduler, render_seed=-1,
+            unique_id=None):
+        s = varied.Settings(style=style, lyrics=lyrics, seed=int(seed), render_seed=int(render_seed), terms=terms,
+                            target_seconds=float(target_seconds),
                             min_new_bars=float(min_new_bars), max_flat_seconds=float(max_flat_seconds),
                             no_vocals=bool(no_vocals), key_lock=key_lock.strip(), tempo_lock=float(tempo_lock),
                             max_attempts=int(max_attempts), renders_per_plan=int(renders_per_plan), steps=int(steps),

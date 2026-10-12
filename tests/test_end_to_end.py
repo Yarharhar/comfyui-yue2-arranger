@@ -106,4 +106,6 @@ def test_variety_report():
     # Varied Song's judge and seed schedule
     s = varied_song.Settings(style="Funk", seed=10, renders_per_plan=2).validate()
     assert [varied_song.schedule(a, s)[1:] for a in range(4)] == [(10, 10), (10, 11), (11, 10), (11, 11)]
+    s2 = varied_song.Settings(style="Funk", seed=10, render_seed=500, renders_per_plan=2).validate()
+    assert [varied_song.schedule(a, s2)[1:] for a in range(4)] == [(10, 500), (10, 501), (11, 500), (11, 501)]
     assert varied_song.judge(r_loop, s)[0] is False and varied_song.judge(r_loop, s)[2]

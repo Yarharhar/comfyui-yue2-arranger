@@ -4,7 +4,7 @@ expands into. Pure Python (no ComfyUI imports): the ComfyUI node in nodes.py onl
 
 One attempt = (plan round, render index):
   plan round r      plans the base style + every variant with planner seed  seed + r
-  render index i    renders the arranged score with render seed  seed + i
+  render index i    renders the arranged score with render seed  render_seed + i  (render_seed -1 = seed)
 An attempt that passes the variety thresholds ends the run. Otherwise the next attempt re-renders the same
 arrangement (new render seed) until `renders_per_plan` renders have failed, then re-plans with the next seed.
 After `max_attempts` the most varied take is returned.
@@ -34,6 +34,7 @@ class Settings:
     style: str
     lyrics: str = DEFAULT_LYRICS
     seed: int = 0
+    render_seed: int = -1  # -1: renders follow `seed`
     terms: str = DEFAULT_TERMS
     target_seconds: float = 300.0
     min_new_bars: float = 0.25
@@ -55,6 +56,8 @@ class Settings:
             raise ScoreError("lyrics must be at most 4000 characters")
         if not 0 <= self.seed < 2 ** 63:
             raise ScoreError("seed out of range")
+        if not -1 <= self.render_seed < 2 ** 63:
+            raise ScoreError("render_seed must be -1 (follow seed) or 0..2^63-1")
         if not 30 <= self.target_seconds <= 900:
             raise ScoreError("target_seconds must be between 30 and 900")
         if not 0 <= self.min_new_bars <= 1 or not 0 < self.max_flat_seconds <= 900:
@@ -77,7 +80,8 @@ class Settings:
 def schedule(attempt: int, s: Settings) -> tuple[int, int, int]:
     """(plan round, planner seed, render seed) for attempt 0, 1, 2, ..."""
     plan_round, render_idx = divmod(attempt, s.renders_per_plan)
-    return plan_round, (s.seed + plan_round) % 2 ** 63, (s.seed + render_idx) % 2 ** 63
+    render_base = s.seed if s.render_seed < 0 else s.render_seed
+    return plan_round, (s.seed + plan_round) % 2 ** 63, (render_base + render_idx) % 2 ** 63
 
 
 def judge(report: dict, s: Settings) -> tuple[bool, float, list[str]]:

@@ -7,6 +7,7 @@ and a varied one for odd seeds, so every path is deterministic:
   seed 21, 2 renders/plan    attempt 1 renders seed 21 (odd) -> passes at once
   seed 10, 2 renders/plan    seed 10 fails, re-render with seed 11 passes, same plan (no re-planning)
   seed 30, 1 render/plan     every attempt renders seed 30 and fails; re-plans with seeds 31, 32; returns the best take
+  seed 30, render_seed 21    plans with seed 30, renders seed 21 (odd) -> passes at once
   + key_lock Em, tempo_lock 104 reach the render.
 
   python tools/varied_song_check.py http://127.0.0.1:8199 FAKE_YUE2_LOG_PATH
@@ -82,6 +83,8 @@ def main():
     lc = calls(log, n0 + len(la) + len(lb))
     d = run(41, 2, key_lock="Em", tempo_lock=104.0)
     ld = calls(log, n0 + len(la) + len(lb) + len(lc))
+    e = run(30, 2, render_seed=21)
+    le = calls(log, n0 + len(la) + len(lb) + len(lc) + len(ld))
     print(f"ran in {time.time() - t0:.1f}s\n")
     for name, r in (("A", a), ("B", b), ("C", c), ("D", d)):
         print(f"--- {name}\n{r['report'].split(chr(10) + 'plan')[0][:900]}\n")
@@ -101,6 +104,8 @@ def main():
                                                  for r in (a, b, c, d)),
         "D: key lock Em reaches the render": "K:Em" in d["abc"] and all(x["key"] == "Em" for x in ld if x["node"] == "render"),
         "D: tempo lock 104": "Q:1/4=104" in d["abc"],
+        "E: plans with seed 30, renders with render_seed 21, passes at once": plans(le) == [30] and renders(le) == [21]
+                                                                             and e["report"].startswith("PASSED: attempt 1 of 1"),
     }
     for k, ok in checks.items():
         print(("PASS " if ok else "FAIL ") + k)

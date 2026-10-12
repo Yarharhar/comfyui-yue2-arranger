@@ -164,7 +164,8 @@
     2,
     6,
     "dpmpp_2m",
-    "sgm_uniform"
+    "sgm_uniform",
+    -1
    ]
   },
   {

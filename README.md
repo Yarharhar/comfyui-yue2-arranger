@@ -60,6 +60,7 @@ Connect the YuE2 checkpoint's `MODEL` (through the NAR LoRA if you use one), `CL
 | Input | Meaning |
 |---|---|
 | `style`, `lyrics`, `seed`, `terms` | As for the planner. Every plan uses the same lyrics and seed. |
+| `render_seed` | Seed for the audio render, or -1 to use `seed`. Keep `seed` fixed and change this to hear new renders of a plan you like. |
 | `target_seconds` | Length of the mix. |
 | `min_new_bars`, `max_flat_seconds` | The pass thresholds (see Song Variety Report below). A take with an early restart also fails. |
 | `no_vocals` | Relabel vocal sections and move sung notes to the instrument (on by default). |
@@ -68,7 +69,8 @@ Connect the YuE2 checkpoint's `MODEL` (through the NAR LoRA if you use one), `CL
 | `max_attempts`, `renders_per_plan` | Renders in total, and failed renders of one arrangement before planning again. |
 | `steps`, `sampler_name`, `scheduler` | Render sampler settings. |
 
-Attempt *n* re-renders the current arrangement with render seed `seed + 1, seed + 2, …`; after `renders_per_plan`
+Attempt *n* re-renders the current arrangement with render seed `render_seed + 1, + 2, …` (`render_seed` is `seed`
+when set to -1); after `renders_per_plan`
 failures it plans everything again with planner seed `seed + 1`, and so on. Outputs: the chosen take's audio, its
 score, a report listing every attempt with its numbers, and its new-bar share.
 
@@ -85,7 +87,9 @@ Style ─▶ YuE2 Style Variants ─styles (list)─▶ YuE2GenerateABC ─abc (
                                                                           └─max_duration─▶ (max_duration)
 YuE2GenerateMusic ▶ EmptyYuE2LatentAudio / KSampler ▶ VAEDecodeAudio ─audio─▶ Song Variety Report
 ```
-- **Render settings.** Give YuE2GenerateMusic the base style, the same lyrics and the same seed you planned with.
+- **Render settings.** Give YuE2GenerateMusic the base style and the same lyrics you planned with. Its seed (and
+  KSampler's) is the render seed and can differ from the planner's; the example workflow drives both from one
+  "Render seed" node.
 - **max_duration.** `max_duration` is a cap, not a target. Auto-Arrange outputs the planned length plus headroom
   for it.
 

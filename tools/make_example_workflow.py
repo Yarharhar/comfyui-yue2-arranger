@@ -3,7 +3,7 @@
 Writes the example workflows (ComfyUI UI format) from a running server's /object_info, so widget orders match the
 installed node versions. Use a server with the real YuE2 nodes (not the test stand-in backend).
 
-  example_workflows/yue2_varied_instrumental.json   every step as its own node
+  example_workflows/yue2_varied_instrumental.json   every step as its own node (separate plan / render seeds)
   example_workflows/yue2_varied_song.json           the one-node version with the variety check and retries
 
   python tools/make_example_workflow.py http://127.0.0.1:8199
@@ -85,21 +85,26 @@ add(2, "LoraLoaderModelOnly", [20, 170], [380, 90], {"lora_name": "nar_lora_join
     "NAR mastering LoRA (optional)", {"model": (1, 0)})
 add(3, "PrimitiveStringMultiline", [20, 310], [380, 140], {"value": STYLE}, "Style")
 add(4, "PrimitiveStringMultiline", [20, 500], [380, 200], {"value": LYRICS}, "Lyrics (section tags only)")
+add(15, "PrimitiveInt", [20, 750], [300, 82], {"value": SEED}, "Plan seed (score / ABC)")
+add(16, "PrimitiveInt", [20, 880], [300, 82], {"value": SEED}, "Render seed (audio)")
 add(5, "YuE2StyleVariants", [440, 310], [380, 150], {}, None, {"style": (3, 0)})
 add(6, "YuE2GenerateABC", [860, 20], [400, 420], {"seed": SEED}, "Planner (runs once per style)",
-    {"clip": (1, 1), "style": (5, 0), "lyrics": (4, 0)})
+    {"clip": (1, 1), "style": (5, 0), "lyrics": (4, 0), "seed": (15, 0)})
 add(7, "YuE2AutoArrange", [1300, 20], [440, 420], {}, None, {"scores": (6, 0)})
 add(8, "YuE2GenerateMusic", [1780, 20], [400, 380], {"seed": SEED}, None,
-    {"clip": (1, 1), "style": (5, 1), "lyrics": (4, 0), "abc": (7, 0), "max_duration": (7, 3)})
+    {"clip": (1, 1), "style": (5, 1), "lyrics": (4, 0), "abc": (7, 0), "max_duration": (7, 3), "seed": (16, 0)})
 add(9, "EmptyYuE2LatentAudio", [1780, 450], [300, 80], {}, None, {"seconds": (8, 1)})
 add(10, "ConditioningZeroOut", [1780, 580], [300, 30], {}, None, {"conditioning": (8, 0)})
 add(11, "KSampler", [2220, 20], [320, 300], {"seed": SEED, "steps": 6, "cfg": 1.0, "sampler_name": "dpmpp_2m",
                                              "scheduler": "sgm_uniform", "denoise": 1.0}, None,
-    {"model": (2, 0), "positive": (8, 0), "negative": (10, 0), "latent_image": (9, 0)})
+    {"model": (2, 0), "positive": (8, 0), "negative": (10, 0), "latent_image": (9, 0), "seed": (16, 0)})
 add(12, "VAEDecodeAudio", [2220, 370], [300, 50], {}, None, {"samples": (11, 0), "vae": (1, 2)})
 add(13, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [2580, 20], [320, 120],
     {"filename_prefix": "audio/yue2_varied"}, None, {"audio": (12, 0)})
 add(14, "SongVarietyReport", [2580, 200], [380, 200], {}, None, {"audio": (12, 0)})
+add(17, "SeamlessLoop", [2580, 450], [320, 160], {"max_bars": 32}, "Optional: a 32-bar loop for menus", {"audio": (12, 0)})
+add(18, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [2940, 450], [320, 120],
+    {"filename_prefix": "audio/yue2_varied_loop"}, None, {"audio": (17, 0)})
 
 
 
@@ -115,8 +120,10 @@ def write(name, groups, notes):
 write("yue2_varied_instrumental.json",
       [{"id": 1, "title": "Plan once per style variant, then mix the plans", "bounding": [430, -40, 1330, 760],
         "color": "#3f789e", "font_size": 22, "flags": {}}],
-      "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. Same seed + lyrics for "
-      "every plan; Auto-Arrange relabels sections so the render has no voice. Song Variety Report checks the result.")
+      "YuE2 Style Variants -> YuE2GenerateABC (list) -> YuE2 Auto-Arrange -> YuE2GenerateMusic. Same plan seed + lyrics "
+      "for every plan; Auto-Arrange relabels sections so the render has no voice. The render seed drives "
+      "YuE2GenerateMusic and KSampler: keep the plan seed and change it for new renders of the same score. Song "
+      "Variety Report checks the result (no automatic retries here; YuE2 Varied Song does those).")
 
 # one-node version: plan, mix, lock, render, check, retry
 nodes.clear()
