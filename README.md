@@ -160,6 +160,11 @@ Tests:
 - **Tempo.** Song Variety Report treats a detected tempo above 160 BPM as half-time and says so. Set `bpm_hint`
   for genuinely fast songs.
 
+## Credits
+
+By Andrew Maneri, built with [Hermes Agent](https://github.com/NousResearch/hermes-agent) (Nous Research) running
+[Claude](https://www.anthropic.com/claude) (Anthropic), with code review by [Grok](https://x.ai/grok) (xAI).
+
 ## License
 
 MIT. Not affiliated with the YuE2 authors (M-A-P) or Comfy Org.
