@@ -21,6 +21,22 @@ expensive render, to fix both:
 No model weights, no extra Python packages (numpy only, which ComfyUI already has). Requires a ComfyUI recent enough
 to have the YuE2 nodes (tested on 0.37.2).
 
+## Example
+
+Same prompt, lyrics and planner seed (42), rendered two ways:
+
+> Synthwave, analog bass, arpeggiated synths, gated drums, driving, melodic, 110 BPM, A minor, instrumental
+
+**Plain YuE2** (1:24): `YuE2GenerateABC` → `YuE2GenerateMusic` with the planner's own score.
+
+<!-- plain_yue2.mp4 -->
+
+**YuE2 Varied Song** (4:52): `example_workflows/yue2_varied_song.json`, render seed 7. Mixes the base plan with three
+of its style variants, returning to the base chorus between them; passed the variety check on the first attempt
+(44% new bars, longest stretch with nothing new 29 s).
+
+<!-- varied_song.mp4 -->
+
 ## Install
 
 ```
@@ -140,18 +156,4 @@ Tests:
 
 ## License
 
-This pack's code is MIT (see `LICENSE`). It contains no YuE2 code, weights or LoRAs, and imports nothing from
-YuE2 or ComfyUI: only the Python standard library and numpy. It works on the ABC text the YuE2 nodes produce and
-the audio they render.
-
-YuE2 itself is licensed separately, and those terms apply to whoever runs the model:
-- the YuE code is Apache-2.0
-- the YuE2 weights are CC BY-NC 4.0, with an added permission for individual creators to use and monetize outputs
-  ([MODEL_LICENSE](https://github.com/multimodal-art-projection/YuE/blob/main/MODEL_LICENSE))
-- companies need a commercial license from the YuE2 team to use the weights commercially
-
-The ABC files in `tests/fixtures/` are YuE2 planner outputs (#YuE2), included as test data. YuE2's license says
-generated outputs are not subject to the weights' NonCommercial restriction solely because they were generated with
-YuE2.
-
-Not affiliated with the YuE2 authors (M-A-P) or Comfy Org.
+MIT. Not affiliated with the YuE2 authors (M-A-P) or Comfy Org.
