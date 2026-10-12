@@ -99,10 +99,10 @@ def main():
         "B: render seeds 10 then 11, one plan round": renders(lb) == [10, 11] and plans(lb) == [10],
         "C: none pass, best of 3 returned": c["report"].startswith("NO TAKE PASSED") and "of 3" in c["report"].split("\n")[0],
         "C: re-planned with seeds 30, 31, 32": plans(lc) == [30, 31, 32],
-        "A/B/D share >= 25%, C below": all(float(r["share"]) >= 0.25 for r in (a, b, d)) and float(c["share"]) < 0.25,
-        "audio returned": all(r["has_audio"] for r in (a, b, c, d)),
+        "A/B/D/E share >= 25%, C below": all(float(r["share"]) >= 0.25 for r in (a, b, d, e)) and float(c["share"]) < 0.25,
+        "audio returned": all(r["has_audio"] for r in (a, b, c, d, e)),
         "no vocal-song labels in the score": all(not {s.label for s in sc.parse(r["abc"]).sections} & set(sc.VOCAL_LABELS)
-                                                 for r in (a, b, c, d)),
+                                                 for r in (a, b, c, d, e)),
         "D: key lock Em reaches the render": "K:Em" in d["abc"] and all(x["key"] == "Em" for x in ld if x["node"] == "render"),
         "D: tempo lock 104": "Q:1/4=104" in d["abc"],
         "E: plans with seed 30, renders with render_seed 21, passes at once": plans(le) == [30] and renders(le) == [21]

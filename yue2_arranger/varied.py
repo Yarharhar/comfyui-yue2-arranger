@@ -81,7 +81,8 @@ def schedule(attempt: int, s: Settings) -> tuple[int, int, int]:
     """(plan round, planner seed, render seed) for attempt 0, 1, 2, ..."""
     plan_round, render_idx = divmod(attempt, s.renders_per_plan)
     render_base = s.plan_seed if s.render_seed < 0 else s.render_seed
-    return plan_round, (s.plan_seed + plan_round) % 2 ** 63, (render_base + render_idx) % 2 ** 63
+    # YuE2GenerateABC, YuE2GenerateMusic and KSampler all take seeds up to 2^64-1
+    return plan_round, (s.plan_seed + plan_round) % 2 ** 64, (render_base + render_idx) % 2 ** 64
 
 
 def judge(report: dict, s: Settings) -> tuple[bool, float, list[str]]:

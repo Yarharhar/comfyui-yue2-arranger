@@ -70,9 +70,10 @@ Connect the YuE2 checkpoint's `MODEL` (through the NAR LoRA if you use one), `CL
 | `min_new_bars`, `max_flat_seconds` | The pass thresholds (see Song Variety Report below). A take with an early restart also fails. |
 | `max_attempts`, `renders_per_plan` | Renders in total, and failed renders of one arrangement before planning again. |
 
-Attempt *n* re-renders the current arrangement with render seed `render_seed + 1, + 2, …` (`render_seed` is
-`plan_seed` when set to -1); after `renders_per_plan` failures it plans everything again with planner seed
-`plan_seed + 1`, and so on. Outputs: the chosen take's audio, its
+The first attempt plans with `plan_seed` and renders with `render_seed` (`plan_seed` when set to -1). A failed take
+is re-rendered from the same arrangement with render seed `render_seed + 1`, `+ 2`, …; after `renders_per_plan`
+failed renders it plans everything again with planner seed `plan_seed + 1` and the render seeds start over from
+`render_seed`, and so on until `max_attempts`. Outputs: the chosen take's audio, its
 score, a report listing every attempt with its numbers, and its new-bar share.
 
 The node expands into ordinary YuE2 nodes at run time (ComfyUI's node expansion, the mechanism behind its loop

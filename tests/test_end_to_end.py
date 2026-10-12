@@ -108,4 +108,10 @@ def test_variety_report():
     assert [varied_song.schedule(a, s)[1:] for a in range(4)] == [(10, 10), (10, 11), (11, 10), (11, 11)]
     s2 = varied_song.Settings(style="Funk", plan_seed=10, render_seed=500, renders_per_plan=2).validate()
     assert [varied_song.schedule(a, s2)[1:] for a in range(4)] == [(10, 500), (10, 501), (11, 500), (11, 501)]
+    top = 2 ** 63 - 1  # largest accepted seed: later attempts go past it (downstream nodes take up to 2^64-1)
+    s3 = varied_song.Settings(style="Funk", plan_seed=top, render_seed=top, renders_per_plan=2).validate()
+    assert [varied_song.schedule(a, s3)[1:] for a in range(3)] == [(top, top), (top, top + 1), (top + 1, top)]
+    for bad in (dict(plan_seed=-1), dict(plan_seed=2 ** 63), dict(render_seed=-2), dict(render_seed=2 ** 63)):
+        with pytest.raises(sc.ScoreError):
+            varied_song.Settings(style="Funk", **bad).validate()
     assert varied_song.judge(r_loop, s)[0] is False and varied_song.judge(r_loop, s)[2]
