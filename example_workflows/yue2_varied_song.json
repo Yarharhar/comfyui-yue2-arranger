@@ -1,6 +1,6 @@
 {
  "last_node_id": 7,
- "last_link_id": 8,
+ "last_link_id": 7,
  "nodes": [
   {
    "id": 1,
@@ -29,14 +29,14 @@
      "name": "CLIP",
      "type": "CLIP",
      "links": [
-      3
+      2
      ]
     },
     {
      "name": "VAE",
      "type": "VAE",
      "links": [
-      4
+      3
      ]
     }
    ],
@@ -47,45 +47,6 @@
     "yue2_3b_int8_convrot.safetensors"
    ],
    "title": "YuE2 checkpoint"
-  },
-  {
-   "id": 2,
-   "type": "LoraLoaderModelOnly",
-   "pos": [
-    20,
-    170
-   ],
-   "size": [
-    380,
-    90
-   ],
-   "flags": {},
-   "order": 1,
-   "mode": 0,
-   "inputs": [
-    {
-     "name": "model",
-     "type": "MODEL",
-     "link": 1
-    }
-   ],
-   "outputs": [
-    {
-     "name": "MODEL",
-     "type": "MODEL",
-     "links": [
-      2
-     ]
-    }
-   ],
-   "properties": {
-    "Node name for S&R": "LoraLoaderModelOnly"
-   },
-   "widgets_values": [
-    "nar_lora_joint_v9_comfyui.safetensors",
-    1.0
-   ],
-   "title": "NAR mastering LoRA (optional)"
   },
   {
    "id": 3,
@@ -99,23 +60,23 @@
     760
    ],
    "flags": {},
-   "order": 2,
+   "order": 1,
    "mode": 0,
    "inputs": [
     {
      "name": "model",
      "type": "MODEL",
-     "link": 2
+     "link": 1
     },
     {
      "name": "clip",
      "type": "CLIP",
-     "link": 3
+     "link": 2
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 4
+     "link": 3
     }
    ],
    "outputs": [
@@ -123,8 +84,8 @@
      "name": "audio",
      "type": "AUDIO",
      "links": [
-      5,
-      7
+      4,
+      6
      ]
     },
     {
@@ -136,7 +97,7 @@
      "name": "report",
      "type": "STRING",
      "links": [
-      6
+      5
      ]
     },
     {
@@ -180,13 +141,13 @@
     120
    ],
    "flags": {},
-   "order": 3,
+   "order": 2,
    "mode": 0,
    "inputs": [
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 5
+     "link": 4
     },
     {
      "name": "format",
@@ -220,13 +181,13 @@
     360
    ],
    "flags": {},
-   "order": 4,
+   "order": 3,
    "mode": 0,
    "inputs": [
     {
      "name": "source",
      "type": "*",
-     "link": 6
+     "link": 5
     }
    ],
    "outputs": [
@@ -254,13 +215,13 @@
     160
    ],
    "flags": {},
-   "order": 5,
+   "order": 4,
    "mode": 0,
    "inputs": [
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 7
+     "link": 6
     }
    ],
    "outputs": [
@@ -268,7 +229,7 @@
      "name": "audio",
      "type": "AUDIO",
      "links": [
-      8
+      7
      ]
     },
     {
@@ -300,13 +261,13 @@
     120
    ],
    "flags": {},
-   "order": 6,
+   "order": 5,
    "mode": 0,
    "inputs": [
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 8
+     "link": 7
     },
     {
      "name": "format",
@@ -334,20 +295,12 @@
    1,
    1,
    0,
-   2,
-   0,
-   "MODEL"
-  ],
-  [
-   2,
-   2,
-   0,
    3,
    0,
    "MODEL"
   ],
   [
-   3,
+   2,
    1,
    1,
    3,
@@ -355,7 +308,7 @@
    "CLIP"
   ],
   [
-   4,
+   3,
    1,
    2,
    3,
@@ -363,7 +316,7 @@
    "VAE"
   ],
   [
-   5,
+   4,
    3,
    0,
    4,
@@ -371,7 +324,7 @@
    "AUDIO"
   ],
   [
-   6,
+   5,
    3,
    2,
    5,
@@ -379,7 +332,7 @@
    "STRING"
   ],
   [
-   7,
+   6,
    3,
    0,
    6,
@@ -387,7 +340,7 @@
    "AUDIO"
   ],
   [
-   8,
+   7,
    6,
    0,
    7,

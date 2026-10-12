@@ -81,8 +81,6 @@ def add(nid, cls, pos, size, overrides=None, title=None, links_in=None):
 ckpt = next((c for c in INFO["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0] if "yue2" in c.lower()),
             "yue2_3b_int8_convrot.safetensors")
 add(1, "CheckpointLoaderSimple", [20, 20], [380, 100], {"ckpt_name": ckpt}, "YuE2 checkpoint")
-add(2, "LoraLoaderModelOnly", [20, 170], [380, 90], {"lora_name": "nar_lora_joint_v9_comfyui.safetensors", "strength_model": 1.0},
-    "NAR mastering LoRA (optional)", {"model": (1, 0)})
 add(3, "PrimitiveStringMultiline", [20, 310], [380, 140], {"value": STYLE}, "Style")
 add(4, "PrimitiveStringMultiline", [20, 500], [380, 200], {"value": LYRICS}, "Lyrics (section tags only)")
 add(15, "PrimitiveInt", [20, 750], [300, 82], {"value": SEED}, "Plan seed (score / ABC)")
@@ -97,7 +95,7 @@ add(9, "EmptyYuE2LatentAudio", [1780, 450], [300, 80], {}, None, {"seconds": (8,
 add(10, "ConditioningZeroOut", [1780, 580], [300, 30], {}, None, {"conditioning": (8, 0)})
 add(11, "KSampler", [2220, 20], [320, 300], {"seed": SEED, "steps": 6, "cfg": 1.0, "sampler_name": "dpmpp_2m",
                                              "scheduler": "sgm_uniform", "denoise": 1.0}, None,
-    {"model": (2, 0), "positive": (8, 0), "negative": (10, 0), "latent_image": (9, 0), "seed": (16, 0)})
+    {"model": (1, 0), "positive": (8, 0), "negative": (10, 0), "latent_image": (9, 0), "seed": (16, 0)})
 add(12, "VAEDecodeAudio", [2220, 370], [300, 50], {}, None, {"samples": (11, 0), "vae": (1, 2)})
 add(13, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [2580, 20], [320, 120],
     {"filename_prefix": "audio/yue2_varied"}, None, {"audio": (12, 0)})
@@ -129,10 +127,8 @@ write("yue2_varied_instrumental.json",
 nodes.clear()
 links.clear()
 add(1, "CheckpointLoaderSimple", [20, 20], [380, 100], {"ckpt_name": ckpt}, "YuE2 checkpoint")
-add(2, "LoraLoaderModelOnly", [20, 170], [380, 90], {"lora_name": "nar_lora_joint_v9_comfyui.safetensors", "strength_model": 1.0},
-    "NAR mastering LoRA (optional)", {"model": (1, 0)})
 add(3, "YuE2VariedSong", [440, 20], [460, 760], {"style": STYLE, "lyrics": LYRICS, "plan_seed": SEED}, None,
-    {"model": (2, 0), "clip": (1, 1), "vae": (1, 2)})
+    {"model": (1, 0), "clip": (1, 1), "vae": (1, 2)})
 add(4, "SaveAudioAdvanced" if "SaveAudioAdvanced" in INFO else "SaveAudio", [940, 20], [320, 120],
     {"filename_prefix": "audio/yue2_varied_song"}, None, {"audio": (3, 0)})
 add(5, "PreviewAny", [940, 190], [460, 360], {}, "Attempts and arrangement", {"source": (3, 2)})
