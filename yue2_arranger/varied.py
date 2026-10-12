@@ -50,7 +50,22 @@ class Settings:
     styles: list = field(default_factory=list)
 
     def validate(self) -> "Settings":
-        if not (self.style or "").strip():
+        """Check every field (types too: settings also arrive as JSON in the internal judge node's state, which a
+        client can send directly) and derive `styles`, capped at MAX_VARIANT_SOCKETS."""
+        for name in ("style", "lyrics", "terms", "key_lock", "sampler_name", "scheduler"):
+            if not isinstance(getattr(self, name), str):
+                raise ScoreError(f"{name} must be a string")
+        for name in ("plan_seed", "render_seed", "steps", "max_attempts", "renders_per_plan"):
+            if type(getattr(self, name)) is not int:
+                raise ScoreError(f"{name} must be an integer")
+        for name in ("target_seconds", "min_new_bars", "max_flat_seconds", "tempo_lock"):
+            if type(getattr(self, name)) not in (int, float):
+                raise ScoreError(f"{name} must be a number")
+        if type(self.no_vocals) is not bool:
+            raise ScoreError("no_vocals must be true or false")
+        if len(self.style) > 2000 or len(self.terms) > 2000:
+            raise ScoreError("style and terms must be at most 2000 characters each")
+        if not self.style.strip():
             raise ScoreError("style is empty")
         if len(self.lyrics) > 4000:
             raise ScoreError("lyrics must be at most 4000 characters")
@@ -80,7 +95,7 @@ class Settings:
 def schedule(attempt: int, s: Settings) -> tuple[int, int, int]:
     """(plan round, planner seed, render seed) for attempt 0, 1, 2, ..."""
     plan_round, render_idx = divmod(attempt, s.renders_per_plan)
-    render_base = s.plan_seed if s.render_seed < 0 else s.render_seed
+    render_base = s.plan_seed if s.render_seed == -1 else s.render_seed
     # YuE2GenerateABC, YuE2GenerateMusic and KSampler all take seeds up to 2^64-1
     return plan_round, (s.plan_seed + plan_round) % 2 ** 64, (render_base + render_idx) % 2 ** 64
 
@@ -125,7 +140,8 @@ def attempt_graph(state: dict, refs: dict, prefix: str) -> tuple[dict, str]:
 
     refs: links (["node_id", slot]) to model, clip, vae; 'arrange' (reuse the current plan's arrangement when this
     attempt only re-renders) and 'best_audio' (the best take so far), both optional."""
-    s = Settings(**state["settings"])
+    s = Settings(**state["settings"]).validate()
+    state["settings"] = asdict(s)  # the next judge re-reads this copy, so store the validated one
     attempt = state["attempt"]
     plan_round, plan_seed, render_seed = schedule(attempt, s)
     nid = _ids(prefix, attempt)
@@ -165,3 +181,22 @@ def attempt_graph(state: dict, refs: dict, prefix: str) -> tuple[dict, str]:
 
 def new_state(s: Settings) -> dict:
     return {"settings": asdict(s), "attempt": 0, "history": [], "best": None}
+
+
+def load_state(text: str) -> tuple[dict, Settings]:
+    """Parse and check the judge node's state. It is normally written by this module, but a client can send the
+    internal node any string, so nothing in it is trusted: settings are re-validated (that caps styles, attempts,
+    steps) and the attempt counter must be consistent with the history."""
+    try:
+        st = json.loads(text)
+        s = Settings(**st["settings"]).validate()
+    except (ValueError, TypeError, KeyError) as e:
+        raise ScoreError(f"bad Varied Song state: {e}") from None
+    attempt, history, best = st.get("attempt"), st.get("history"), st.get("best")
+    if (type(attempt) is not int or not 0 <= attempt < s.max_attempts or not isinstance(history, list)
+            or len(history) != attempt or not (best is None or isinstance(best, dict))):
+        raise ScoreError("bad Varied Song state: attempt/history/best")
+    if (best is None) != (attempt == 0):
+        raise ScoreError("bad Varied Song state: best")
+    st["settings"] = asdict(s)
+    return st, s

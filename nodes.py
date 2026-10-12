@@ -373,8 +373,7 @@ class YuE2VariedSongJudge:
 
     def run(self, audio, audio_ref, abc, arrange_info, arrange_ref, state, model, clip, vae, best_audio=None,
             best_audio_ref=None, unique_id=None):
-        st = json.loads(state)
-        s = varied.Settings(**st["settings"])
+        st, s = varied.load_state(state)
         attempt = st["attempt"]
         _, plan_seed, render_seed = varied.schedule(attempt, s)
         info = json.loads(arrange_info)
